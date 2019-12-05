@@ -1,10 +1,7 @@
-# import src.geojson as geoj
-import geopandas as gpd
 import matplotlib.pyplot as plt
+import geopandas as gpd
 
-def draw_test_plot():
-    # data = geoj.read_geojson("city_grid.geojson")
-    mo_gdf = gpd.read_file("city_grid.geojson")
-    ax = mo_gdf.plot()
-
+def geopandas(filename, column, cmap):
+    mo_gdf = gpd.read_file(filename)
+    ax = mo_gdf.plot(column=column, cmap=cmap, legend=True, figsize=[15,15])
     plt.show()
