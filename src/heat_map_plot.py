@@ -3,6 +3,9 @@ import geopandas as gpd
 import geojson
 from shapely.geometry import Polygon
 
+import folium
+from algorithm import min_max
+
 
 def geopandas(input_filename, column, cmap):
     mo_gdf = gpd.read_file(input_filename)
@@ -11,17 +14,15 @@ def geopandas(input_filename, column, cmap):
     plt.show()
 
 
-import folium
-
-
 def __minmax(polygons):
     """return (min_x, max_x), (min_y, max_y)"""
-    # TODO optimization
-    min_x = min(min(polygons, key=lambda polygon: min(polygon.exterior.coords.xy[0])).exterior.coords.xy[0])
-    min_y = min(min(polygons, key=lambda polygon: min(polygon.exterior.coords.xy[1])).exterior.coords.xy[1])
+    min_x, max_x = min_max(polygons, key=lambda polygon: polygon.exterior.coords.xy[0][0])
+    min_x = min(min_x.exterior.coords.xy[0])
+    max_x = max(max_x.exterior.coords.xy[0])
 
-    max_x = max(max(polygons, key=lambda polygon: max(polygon.exterior.coords.xy[0])).exterior.coords.xy[0])
-    max_y = max(max(polygons, key=lambda polygon: max(polygon.exterior.coords.xy[1])).exterior.coords.xy[1])
+    min_y, max_y = min_max(polygons, key=lambda polygon: polygon.exterior.coords.xy[1][0])
+    min_y = min(min_y.exterior.coords.xy[1])
+    max_y = max(max_y.exterior.coords.xy[1])
 
     return (min_x, max_x), (min_y, max_y)
 
@@ -31,8 +32,8 @@ def html_map(input_filename, column, output, cmap):
 
     x_coord, y_coord = __minmax(gdf["geometry"])
 
-    def avg(min_max):
-        return (min_max[1] + min_max[0]) / 2
+    def avg(minmax):
+        return (minmax[1] + minmax[0]) / 2
 
     m = folium.Map(location=[avg(y_coord), avg(x_coord)])
 
@@ -45,14 +46,14 @@ def html_map(input_filename, column, output, cmap):
 
     tmp_frame = gpd.GeoDataFrame()
     tmp_frame[column] = gdf[column]
-    tmp_frame[column+'_data'] = gdf[column]
+    tmp_frame[column + '_data'] = gdf[column]
 
     folium.Choropleth(
         geo_data=gdf[[column, 'geometry']].to_json(),
         name='choropleth',
         data=tmp_frame,
         key_on=f'feature.properties.{column}',
-        columns=[column, column+'_data'],
+        columns=[column, column + '_data'],
         fill_color='YlGnBu',
         line_weight=0,
         fill_opacity=0.7,
