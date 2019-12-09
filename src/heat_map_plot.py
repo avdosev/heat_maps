@@ -27,16 +27,36 @@ def __minmax(polygons):
 
 
 def html_map(input_filename, column, output, cmap):
-    mo_gdf = gpd.read_file(input_filename)
+    gdf = gpd.read_file(input_filename)
 
-    x_coord, y_coord = __minmax(mo_gdf["geometry"])
+    x_coord, y_coord = __minmax(gdf["geometry"])
 
     def avg(min_max):
         return (min_max[1] + min_max[0]) / 2
-    print(f'feature.properties.{column}')
-    m = folium.Map(location=[avg(y_coord), avg(x_coord)])
-    folium.Choropleth(
 
+    m = folium.Map(location=[avg(y_coord), avg(x_coord)])
+
+    # из за корявого интерфейся/документации/моей невнимательности
+    # создается соответсвие
+    # значение: значени_дата
+    # которое по своей сути словарь
+    # значение: значение
+    # хз как сделать по нормальному возможно никак
+
+    tmp_frame = gpd.GeoDataFrame()
+    tmp_frame[column] = gdf[column]
+    tmp_frame[column+'_data'] = gdf[column]
+
+    folium.Choropleth(
+        geo_data=gdf[[column, 'geometry']].to_json(),
+        name='choropleth',
+        data=tmp_frame,
+        key_on=f'feature.properties.{column}',
+        columns=[column, column+'_data'],
+        fill_color='YlGnBu',
+        line_weight=0,
+        fill_opacity=0.7,
+        line_opacity=0.2
     ).add_to(m)
 
     m.save(output)

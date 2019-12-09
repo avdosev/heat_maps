@@ -10,10 +10,9 @@ args = parser.parse_args()
 if __name__ == "__main__":
     filename = "city_grid.geojson"
     cmap = 'YlGnBu'
+    column = "obj2"
     print("started")
-    data = geoj.read_geojson(filename)
-    print("end reading geojson")
-    print("features count", len(data["features"]))
     print("start draw")
-    # hmp.geopandas(filename, "prestige", cmap=cmap)
-    hmp.html_map(filename, "prestige", "../output/map.html", cmap=cmap)
+    hmp.geopandas(filename, column, cmap=cmap)
+    hmp.html_map(filename, column, "../output/map.html", cmap=cmap)
+    print("end draw")
